@@ -10,24 +10,36 @@ import UIKit
 
 class TweetViewController: UIViewController {
 
-     @IBOutlet weak var tweetTextView: UITextView!
-      
-      // MARK: - Lifecycle
-      
-      override func viewDidLoad() {
-          super.viewDidLoad()
-          tweetTextView.becomeFirstResponder()
-          
-      }
-      
-      // MARK: - Actions
-      
-      @IBAction func cancel(_ sender: UIBarButtonItem) {
-          // dismiss view
-          dismiss(animated: true, completion: nil)
-      }
-      
-     
+       @IBOutlet weak var tweetTextView: UITextView!
+       // MARK: - Lifecycle
+       
+       override func viewDidLoad() {
+           super.viewDidLoad()
+           tweetTextView.becomeFirstResponder()
+           
+       }
+    
+    
+    
+       // MARK: - Actions
+       
+       @IBAction func cancel(_ sender: UIBarButtonItem) {
+           // dismiss view
+           dismiss(animated: true, completion: nil)
+       }
+       
+       @IBAction func tweet(_ sender: UIBarButtonItem) {
+           if (!tweetTextView.text.isEmpty) {
+               TwitterAPICaller.client?.postTweet(tweetString: tweetTextView.text, success: {
+                   self.dismiss(animated: true, completion: nil)
+               }, failure: { (error) in
+                   print("Error posting tweet \(error)")
+                   self.dismiss(animated: true, completion: nil)
+               })
+           } else {
+               self.dismiss(animated: true, completion: nil)
+           }
+       }
     /*
     // MARK: - Navigation
 

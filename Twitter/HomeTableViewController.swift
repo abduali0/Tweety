@@ -21,12 +21,20 @@ class HomeTableViewController: UITableViewController {
         
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self .tableView.estimatedRowHeight = 150
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // fetch tweets and load them to array
+        self.loadTweets()
     }
 
     @objc func loadTweets(){
@@ -60,21 +68,27 @@ class HomeTableViewController: UITableViewController {
         numberOfTweet = numberOfTweet + 20
         let myParams = ["count": numberOfTweet]
         
-        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams as [String : Any], success: { (tweets: [NSDictionary]) in
+       TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams as [String : Any], success:
+        { (tweets: [NSDictionary]) in
             
+            // remove tweets from array before adding for a fresh list of tweets each time
             self.tweetArray.removeAll()
+                
+            // add tweets to the array
             for tweet in tweets {
                 self.tweetArray.append(tweet)
             }
             
+            // reload tableView with data
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
             
-            self.tableView.reloadData()
-            
-            self.myRefreshControl.endRefreshing()
-            
+            // disable refresh control after refreshing
+            self.refreshControl?.endRefreshing()
             
         }, failure: { (Error) in
-            print("Tweets not retreived, uh oh.")
+            fatalError("Tweets not retreived, uh oh")
         })
     
     }
@@ -108,6 +122,9 @@ class HomeTableViewController: UITableViewController {
             cell.profileImageView.image = UIImage(data: imageData)
         
         }
+            cell.setFavorite(tweetArray[indexPath.row]["favorited"] as! Bool)
+            cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
+            cell.setRetweeted(tweetArray[indexPath.row]["retweeted"] as! Bool)
         
             return cell
     }
